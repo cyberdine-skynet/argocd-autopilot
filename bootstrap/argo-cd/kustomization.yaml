@@ -15,5 +15,6 @@ kind: Kustomization
 namespace: argocd
 resources:
 - github.com/argoproj-labs/argocd-autopilot/manifests/base?ref=v0.4.19
-patches:
-- path: argocd-server-np-patch.yaml
+
+# patches:
+# - path: argocd-server-np-patch.yaml
