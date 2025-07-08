@@ -14,5 +14,6 @@ metadata:
   namespace: traefik
 ---
 
+
 # ... (ClusterRole, ClusterRoleBinding, Deployment, Service, etc. follow)
 # This is a placeholder. Download the full manifest or use Helm for production.
