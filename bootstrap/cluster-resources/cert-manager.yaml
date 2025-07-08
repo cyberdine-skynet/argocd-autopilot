@@ -5,7 +5,6 @@
 
 # To apply manually:
 # kubectl apply -f cert-manager.yaml
-
 ---
 # This is a placeholder. For brevity, the full manifest is not included here.
 # Download the full manifest from the official source above for production use.
@@ -14,4 +13,4 @@ kind: Namespace
 metadata:
   name: cert-manager
 ---
-# ... (CRDs, Deployments, RBAC, etc. follow in the official manifest)
+ # ... (CRDs, Deployments, RBAC, etc. follow in the official manifest)
