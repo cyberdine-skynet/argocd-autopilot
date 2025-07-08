@@ -1,0 +1,18 @@
+# Traefik Ingress Controller manifest (static YAML example)
+# For production, use the official Helm chart or customize as needed.
+# Source: https://doc.traefik.io/traefik/getting-started/install-traefik/
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: traefik
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: traefik-ingress-controller
+  namespace: traefik
+---
+
+# ... (ClusterRole, ClusterRoleBinding, Deployment, Service, etc. follow)
+# This is a placeholder. Download the full manifest or use Helm for production.
