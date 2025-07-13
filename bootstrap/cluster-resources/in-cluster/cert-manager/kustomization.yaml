@@ -1,2 +1,2 @@
 resources:
-  - ../../cert-manager.yaml
+- cert-manager.yaml
