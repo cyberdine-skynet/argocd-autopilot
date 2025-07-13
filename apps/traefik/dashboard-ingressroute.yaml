@@ -1,5 +1,5 @@
 apiVersion: traefik.containo.us/v1alpha1
-kind: Ingressroute
+kind: IngressRoute
 metadata:
   name: traefik-dashboard
   namespace: traefik
@@ -10,6 +10,9 @@ spec:
   routes:
   - match: Host(`traefik.fle.api54.de`) && PathPrefix(`/dashboard`)
     kind: Rule
+    middlewares:
+    - name: dashboard-auth
+      namespace: traefik
     services:
     - name: traefik
       port: 8080
