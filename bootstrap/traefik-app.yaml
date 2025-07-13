@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://github.com/cyberdine-skynet/argocd-autopilot.git
     targetRevision: HEAD
-    path: bootstrap/cluster-resources/in-cluster/traefik
+    path: apps/traefik
   destination:
     server: https://kubernetes.default.svc
     namespace: traefik
