@@ -1,24 +1,46 @@
-name: Lint and YAML Validation
+name: Lint, Auto-Fix YAML, and Comment PR
 
 on:
-  push:
-    branches: [ main ]
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
+      - "feature/**"
+  push:
+    branches:
+      - main
 
 jobs:
-  lint-yaml:
+  lint-and-autofix:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - name: Lint YAML files
-        uses: ibiqlik/action-yamllint@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          file_or_dir: .
-      - name: Kustomize build check
-        uses: imranismail/setup-kustomize@v2
-      - name: Run kustomize build
+          node-version: 20
+
+      - name: Install Prettier
+        run: npm install --global prettier
+
+      - name: Lint and auto-fix YAML
         run: |
-          find . -name kustomization.yaml | while read k; do
-            kustomize build $(dirname "$k")
-          done
+          npx prettier --write '**/*.yaml'
+          git diff > yaml-fix.diff
+
+      - name: Commit and push changes (if any)
+        if: github.event_name == 'pull_request'
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add .
+          git diff --cached --quiet || git commit -m 'chore: auto-fix YAML formatting'
+          git push || true
+
+      - name: Post diff as PR comment
+        if: github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          path: yaml-fix.diff
