@@ -2,3 +2,4 @@ resources:
 - pihole/
 - traefik/
 - argocd-ns.yaml
+- ../../cluster-apps/
