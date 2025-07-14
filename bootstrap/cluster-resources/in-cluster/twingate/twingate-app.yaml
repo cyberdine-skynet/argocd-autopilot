@@ -1,17 +1,17 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: twingate-operator
+  name: twingate-connector
   namespace: argocd
 spec:
   project: default
   source:
     repoURL: https://twingate.github.io/helm-charts
-    chart: twingate-operator
-    targetRevision: 1.0.44 # Use the latest or your preferred version
+    chart: connector
+    targetRevision: 0.1.31
     helm:
       values: |
-        # You can override Helm values here if needed
+        # Add your custom values here if needed
   destination:
     server: https://kubernetes.default.svc
     namespace: twingate
