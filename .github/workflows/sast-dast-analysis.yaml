@@ -35,7 +35,7 @@ jobs:
             -Dsonar.projectKey=my_project
             -Dsonar.organization=my_org
             -Dsonar.host.url=https://sonarcloud.io
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+            -Dsonar.login=0f8f98cfcd7e8cff5c73fca4d4d4681f058ee6c7
 
   dynamic-analysis:
     name: Dynamic Application Security Testing

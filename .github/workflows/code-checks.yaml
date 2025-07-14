@@ -32,7 +32,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Run Terrascan
-        uses: tenable/terrascan-action@v1.0.0
+        uses: tenable/terrascan-action@v1.7.0
         with:
           iac_type: terraform
           iac_version: v14
@@ -46,7 +46,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Run Trivy
-        uses: aquasecurity/trivy-action@v0.10.0
+        uses: aquasecurity/trivy-action@v0.19.0
         with:
           scan-type: fs
           scan-ref: .

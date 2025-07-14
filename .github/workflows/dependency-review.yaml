@@ -1,14 +1,19 @@
-name: "Dependency Review"
-on: [pull_request]
+name: Dependency Review
 
-permissions:
-  contents: read
+on:
+  pull_request:
+    branches:
+      - main
 
 jobs:
   dependency-review:
     runs-on: ubuntu-latest
     steps:
-      - name: "Checkout Repository"
-        uses: actions/checkout@v4
-      - name: "Dependency Review"
-        uses: actions/dependency-review-action@v4
+      - uses: actions/checkout@v4
+      - uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+          deny-licenses: GPL-3.0, AGPL-3.0
+          fail-on-scopes: runtime, development
+          comment-summary-in-pr: true
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
