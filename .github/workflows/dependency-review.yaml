@@ -16,4 +16,4 @@ jobs:
           deny-licenses: GPL-3.0, AGPL-3.0
           fail-on-scopes: runtime, development
           comment-summary-in-pr: true
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          repo-token: 0f8f98cfcd7e8cff5c73fca4d4d4681f058ee6c7
