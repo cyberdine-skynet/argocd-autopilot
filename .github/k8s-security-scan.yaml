@@ -5,22 +5,23 @@ name: Kubernetes Security Scan
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
   pull_request:
-    branches: [main]
+    branches: [ main ]
   workflow_dispatch:
+
 
 jobs:
   kube-scan:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Run kube-score for Kubernetes manifests
-        uses: docker://zegl/kube-score:v1.17.0
-        with:
-          args: "score argocd-autopilot/**/*.yaml"
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: config
-          scan-ref: argocd
+    - uses: actions/checkout@v4
+    - name: Run kube-score for Kubernetes manifests
+      uses: docker://zegl/kube-score:v1.17.0
+      with:
+        args: "score argocd-autopilot/**/*.yaml"
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: config
+        scan-ref: argocd
