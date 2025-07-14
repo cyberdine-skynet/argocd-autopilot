@@ -1,0 +1,3 @@
+resources:
+- twingate-ns.yaml
+- twingate-app.yaml
