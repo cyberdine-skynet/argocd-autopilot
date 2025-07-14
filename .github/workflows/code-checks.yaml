@@ -1,4 +1,4 @@
-name: DevSecOps Pipeline
+name: code-checks
 
 on:
   push:
@@ -57,10 +57,5 @@ jobs:
           target: "http://localhost:8080"
 
   ci-cd-security:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      - name: Run Zizmor
-        uses: zizmorcore/zizmor-action@v1.0.0
+    uses: ./.github/workflows/zizmor-reusable.yaml
+    secrets: inherit
