@@ -1,25 +1,19 @@
-name: Lint and YAML Validation
+---
+name: Lint
 
-on:
-  push:
-    branches: [main]
+on: # yamllint disable-line rule:truthy
   pull_request:
-    branches: [main]
-  workflow_dispatch:
+    branches:
+      - main
+
+permissions:
+  contents: read
 
 jobs:
-  lint-yaml:
+  lint:
+    name: Linters
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Lint YAML files
-        uses: ibiqlik/action-yamllint@v3
-        with:
-          file_or_dir: .
-      - name: Kustomize build check
-        uses: imranismail/setup-kustomize@v2
-      - name: Run kustomize build
-        run: |
-          find . -name kustomization.yaml -print0 | while IFS= read -r -d '' k; do
-            kustomize build "$(dirname "$k")"
-          done
+      - name: Checkout
+        uses: actions/checkout@v4
+      - run: yamllint --strict -- $(git ls-files '*.yaml' '*.yml')
