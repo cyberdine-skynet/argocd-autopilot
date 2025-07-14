@@ -31,13 +31,13 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Run Terrascan
-        uses: tenable/terrascan-action@v1.19.9
+      - name: Run Checkov
+        uses: bridgecrewio/checkov-action@v12
         with:
-          iac_type: terraform
-          iac_version: v14
-          policy_type: aws
-          sarif_upload: true
+          directory: .
+          framework: terraform
+          output_format: sarif
+          output_file_path: results.sarif
 
   application-security:
     runs-on: ubuntu-latest
