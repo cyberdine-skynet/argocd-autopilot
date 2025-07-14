@@ -22,6 +22,8 @@ jobs:
     name: Static Code Analysis
     runs-on: ubuntu-latest
     needs: dependency-review
+    permissions:
+      contents: read
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
