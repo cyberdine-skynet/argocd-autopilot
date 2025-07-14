@@ -3,4 +3,3 @@ resources:
 - traefik/
 - argocd-ns.yaml
 - cert-manager/
-- twingate/
