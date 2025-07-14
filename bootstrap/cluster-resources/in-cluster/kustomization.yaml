@@ -2,6 +2,3 @@ resources:
 - pihole/
 - traefik/
 - argocd-ns.yaml
-- ../../cluster-apps/cert-manager-app.yaml
-- ../../cluster-apps/pihole-app.yaml
-- ../../cluster-apps/traefik-app.yaml
