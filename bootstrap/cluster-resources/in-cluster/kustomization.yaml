@@ -1,3 +1,4 @@
 resources:
-  - pihole/
-  - traefik/
+- pihole/
+- traefik/
+- argocd-ns.yaml
