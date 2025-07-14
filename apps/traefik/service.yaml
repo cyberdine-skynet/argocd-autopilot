@@ -5,15 +5,13 @@ metadata:
   labels:
     app: traefik
 spec:
-  type: NodePort
+  type: ClusterIP
   ports:
   - port: 80
     name: web
     targetPort: 80
-    nodePort: 31080
   - port: 8080
     name: admin
     targetPort: 8080
-    nodePort: 31081
   selector:
     app: traefik
