@@ -6,7 +6,7 @@ spec:
   project: default
   source:
     path: apps/heimdall
-    repoURL: 'https://github.com/YOUR_ORG/YOUR_REPO.git' # Update this to your repo
+    repoURL: 'https://github.com/cyberdine-skynet/argocd-autopilot.git' # Update this to your repo
     targetRevision: HEAD
   destination:
     server: https://kubernetes.default.svc
