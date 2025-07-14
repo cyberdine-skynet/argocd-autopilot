@@ -3,13 +3,14 @@ kind: Ingress
 metadata:
   name: heimdall-dashboard
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+    traefik.ingress.kubernetes.io/router.middlewares: default-headers@kubernetescrd
 spec:
   rules:
   - host: heimdall.fle.api64.de
     http:
       paths:
-      - path: /dashboard(/|$)(.*)
+      - path: /dashboard
         pathType: Prefix
         backend:
           service:
