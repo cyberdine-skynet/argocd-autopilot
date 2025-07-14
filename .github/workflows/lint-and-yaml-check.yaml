@@ -2,9 +2,10 @@ name: Lint and YAML Validation
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
+  workflow_dispatch:
 
 jobs:
   lint-yaml:
@@ -19,6 +20,6 @@ jobs:
         uses: imranismail/setup-kustomize@v2
       - name: Run kustomize build
         run: |
-          find . -name kustomization.yaml | while read k; do
-            kustomize build $(dirname "$k")
+          find . -name kustomization.yaml -print0 | while IFS= read -r -d '' k; do
+            kustomize build "$(dirname "$k")"
           done
