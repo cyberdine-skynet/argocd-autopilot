@@ -1,0 +1,23 @@
+name: Kubernetes Security Scan
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  kube-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run kube-score for Kubernetes manifests
+        uses: zegl/kube-score-action@v1
+        with:
+          files: |
+            argocd-autopilot/**/*.yaml
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: config
+          scan-ref: argocd-autopilot/

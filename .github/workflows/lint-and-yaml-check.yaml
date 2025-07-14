@@ -1,0 +1,24 @@
+name: Lint and YAML Validation
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint-yaml:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lint YAML files
+        uses: ibiqlik/action-yamllint@v3
+        with:
+          file_or_dir: .
+      - name: Kustomize build check
+        uses: imranismail/setup-kustomize@v2
+      - name: Run kustomize build
+        run: |
+          find . -name kustomization.yaml | while read k; do
+            kustomize build $(dirname "$k")
+          done
