@@ -26,3 +26,7 @@ jobs:
       with:
         scan-type: config
         scan-ref: argocd
+    - name: Run OWASP ZAP full scan
+      uses: docker://owasp/zap2docker-stable:2.14.0
+      with:
+        args: "zap-full-scan.py -t http://localhost:8080 -J report_json.json -w report_md.md -r report_html.html"

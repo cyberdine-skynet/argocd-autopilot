@@ -162,19 +162,17 @@ jobs:
 
           <details><summary>Show Trivy Check Results</summary>
 
-          ```
+          <pre>
           ${{ steps.trivy_outcome.outputs.TRIVY_RESULTS }}
-
-          ```
+          </pre>
 
           </details>
 
           <details><summary>Show TFLint Check Results</summary>
 
-          ```
+          <pre>
           ${{ steps.tflint_outcome.outputs.TFLINT_SUMMARY }}
-
-          ```
+          </pre>
 
           </details>
 
