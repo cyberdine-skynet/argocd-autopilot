@@ -4,6 +4,10 @@ name: >-
   [DO NOT CLICK]
   Reusable Zizmor
 
+permissions:
+  contents: read
+  security-events: write
+
 on:
   workflow_call:
 
