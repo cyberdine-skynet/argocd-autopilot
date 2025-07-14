@@ -13,10 +13,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run kube-score for Kubernetes manifests
-        uses: zegl/kube-score-action@v1
+        uses: docker://zegl/kube-score:v1.17.0
         with:
-          files: |
-            argocd-autopilot/**/*.yaml
+          args: "score argocd-autopilot/**/*.yaml"
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
