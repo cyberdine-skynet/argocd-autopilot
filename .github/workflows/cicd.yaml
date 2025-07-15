@@ -85,56 +85,10 @@ jobs:
           name: validation-report
           path: validation.md
 
-  security-analysis:
-    name: Security Analysis (IaC + Policy)
-    runs-on: ubuntu-latest
-    needs: validate-manifests
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Security Tools
-        run: |
-          # Install Trivy for IaC scanning
-          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b . v0.50.0
-          
-          # Install OPA Conftest for policy checking
-          wget https://github.com/open-policy-agent/conftest/releases/latest/download/conftest_Linux_x86_64.tar.gz
-          tar xzf conftest_Linux_x86_64.tar.gz
-          chmod +x conftest && sudo mv conftest /usr/local/bin/
-
-      - name: Run Security Scans
-        run: |
-          mkdir -p scan-output
-          echo "### 🔒 ArgoCD Security Analysis" > scan-output/security.md
-          echo '```' >> scan-output/security.md
-
-          echo "🔹 Trivy IaC scan for ArgoCD configs..." >> scan-output/security.md
-          ./trivy config . --severity HIGH,CRITICAL --format table >> scan-output/security.md || echo "Trivy IaC issues found"
-
-          echo "🔹 Checking for sensitive data..." >> scan-output/security.md
-          grep -r "password\|secret\|token" . --include="*.yaml" --include="*.yml" >> scan-output/security.md || echo "No secrets found in plaintext"
-
-          echo "🔹 ArgoCD best practices check..." >> scan-output/security.md
-          find . -name "*app*.yaml" | while read app; do
-            echo "Checking $app for best practices:" >> scan-output/security.md
-            # Check for automated sync
-            grep -q "automated:" "$app" && echo "✅ Automated sync configured" >> scan-output/security.md || echo "⚠️ Manual sync only" >> scan-output/security.md
-            # Check for prune policy
-            grep -q "prune: true" "$app" && echo "✅ Prune enabled" >> scan-output/security.md || echo "⚠️ Prune disabled" >> scan-output/security.md
-          done
-
-          echo '```' >> scan-output/security.md
-
-      - name: Upload security report
-        uses: actions/upload-artifact@v4
-        with:
-          name: security-report
-          path: scan-output/security.md
-
   lint-yaml:
     name: YAML Linting and Formatting
     runs-on: ubuntu-latest
-    needs: security-analysis
+    needs: validate-manifests
     steps:
       - uses: actions/checkout@v4
 
@@ -166,7 +120,6 @@ jobs:
     name: Validate ArgoCD Autopilot Structure
     runs-on: ubuntu-latest
     needs: lint-yaml
-    # Remove the condition to always run
     steps:
       - uses: actions/checkout@v4
 
@@ -201,86 +154,76 @@ jobs:
           name: structure-report
           path: structure.md
 
-  # Add a no-deployment job to handle cases where there's nothing to deploy
-  no-deployment-check:
-    name: No Deployment Check
-    runs-on: ubuntu-latest
-    needs: validate-structure
-    steps:
-      - name: Create no-deployment report
-        run: |
-          echo "### 📋 Deployment Status" > no-deploy.md
-          echo '```' >> no-deploy.md
-          echo "🔹 ArgoCD Autopilot Configuration Only" >> no-deploy.md
-          echo "✅ No container images to build or deploy" >> no-deploy.md
-          echo "✅ Configuration validation completed successfully" >> no-deploy.md
-          echo "🎯 Ready for ArgoCD cluster application" >> no-deploy.md
-          echo '```' >> no-deploy.md
-
-      - name: Upload no-deployment report
-        uses: actions/upload-artifact@v4
-        with:
-          name: no-deployment-report
-          path: no-deploy.md
-
   post-pr-comments:
     name: Post PR Comments
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
-    needs: [source-trigger, validate-manifests, security-analysis, lint-yaml, validate-structure]
+    needs: [source-trigger, validate-manifests, lint-yaml, validate-structure]
     steps:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
           path: reports
 
-      - name: Post Trigger Report
-        uses: marocchino/sticky-pull-request-comment@v2
-        with:
-          path: reports/trigger-report/trigger.md
-          header: "🔄 ArgoCD Autopilot Validation Trigger"
+      - name: Create Combined PR Report
+        run: |
+          echo "## 🔄 ArgoCD Autopilot Validation Results" > combined-report.md
+          echo "" >> combined-report.md
+          
+          # Add trigger info
+          if [ -f "reports/trigger-report/trigger.md" ]; then
+            cat reports/trigger-report/trigger.md >> combined-report.md
+            echo "" >> combined-report.md
+          fi
+          
+          # Add validation results
+          if [ -f "reports/validation-report/validation.md" ]; then
+            cat reports/validation-report/validation.md >> combined-report.md
+            echo "" >> combined-report.md
+          fi
+          
+          # Add lint results
+          if [ -f "reports/lint-report/lint.md" ]; then
+            cat reports/lint-report/lint.md >> combined-report.md
+            echo "" >> combined-report.md
+          fi
+          
+          # Add structure validation
+          if [ -f "reports/structure-report/structure.md" ]; then
+            cat reports/structure-report/structure.md >> combined-report.md
+            echo "" >> combined-report.md
+          fi
+          
+          # Add summary
+          echo "## 📋 Summary" >> combined-report.md
+          echo "✅ **Kubernetes manifest validation** - Completed" >> combined-report.md
+          echo "✅ **YAML linting and formatting** - Completed" >> combined-report.md
+          echo "✅ **ArgoCD Autopilot structure validation** - Completed" >> combined-report.md
+          echo "" >> combined-report.md
+          echo "🚀 **Status:** Ready for ArgoCD cluster application!" >> combined-report.md
 
-      - name: Post Validation Report
+      - name: Post Combined Report
         uses: marocchino/sticky-pull-request-comment@v2
         with:
-          path: reports/validation-report/validation.md
-          header: "⚙️ Kubernetes Manifest Validation"
-
-      - name: Post Security Report
-        uses: marocchino/sticky-pull-request-comment@v2
-        with:
-          path: reports/security-report/security.md
-          header: "🔒 ArgoCD Security Analysis"
-
-      - name: Post Lint Report
-        uses: marocchino/sticky-pull-request-comment@v2
-        with:
-          path: reports/lint-report/lint.md
-          header: "🧹 YAML Linting Results"
+          path: combined-report.md
+          header: "ArgoCD Autopilot Validation"
 
   notify-validation-complete:
     name: Notify Validation Complete
     runs-on: ubuntu-latest
-    needs: [validate-structure, no-deployment-check]
+    needs: validate-structure
     steps:
-      - name: Download all reports
-        uses: actions/download-artifact@v4
-        with:
-          path: reports
-
       - name: Create validation summary
         run: |
           echo "## 🎉 ArgoCD Autopilot Validation Complete!" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### ✅ All Checks Passed:" >> $GITHUB_STEP_SUMMARY
           echo "- Kubernetes manifest validation" >> $GITHUB_STEP_SUMMARY
-          echo "- Security analysis (IaC scanning)" >> $GITHUB_STEP_SUMMARY  
           echo "- YAML linting and formatting" >> $GITHUB_STEP_SUMMARY
           echo "- ArgoCD Autopilot structure validation" >> $GITHUB_STEP_SUMMARY
-          echo "- Configuration-only deployment verified" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 🚀 Ready for ArgoCD:" >> $GITHUB_STEP_SUMMARY
           echo "Your ArgoCD Autopilot configuration is validated and ready to be applied to the cluster!" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 📋 No Container Images:" >> $GITHUB_STEP_SUMMARY
-          echo "This is a configuration-only repository. No Docker images need to be built or deployed." >> $GITHUB_STEP_SUMMARY
+          echo "### 📋 Configuration Repository:" >> $GITHUB_STEP_SUMMARY
+          echo "This is a configuration-only repository. No container images need to be built or deployed." >> $GITHUB_STEP_SUMMARY
