@@ -1,0 +1,3 @@
+resources:
+  - mkdocs-ns.yaml
+  - skynet-docs/mkdocs
