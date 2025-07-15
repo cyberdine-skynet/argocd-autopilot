@@ -1,0 +1,45 @@
+name: Deploy MkDocs with Docker
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-mkdocs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Build Docker image
+        run: |
+          docker build -t mkdocs-site .
+
+      - name: Run MkDocs container
+        run: |
+          # Stop any existing container on same name
+          if [ $(docker ps -aq -f name=mkdocs-container) ]; then
+            docker rm -f mkdocs-container
+          fi
+          # Run container exposing port 8668 and NodePort (e.g., 30000) mapping
+          # For NodePort specifically, you would usually set this on Kubernetes side,
+          # here we expose port 8668 on localhost
+          docker run -d --name mkdocs-container -p 8668:8000 mkdocs-site
+
+      - name: Verify container is running
+        run: |
+          docker ps | grep mkdocs-container
+
+      - name: Output Access Info
+        run: echo "MkDocs is running and accessible at http://localhost:8668"
+
+# Note:
+# - This workflow builds and starts a Docker container exposing port 8000 internally and mapped to 8668 externally.
+# - For NodePort functionality, this is a Kubernetes concept. If you want this container accessible on a Kubernetes cluster NodePort:
+#   you need to create a Kubernetes Deployment and Service YAML and use kubectl in this workflow.
+# - This example runs container on the GitHub runner machine, which will not be externally reachable by default.
