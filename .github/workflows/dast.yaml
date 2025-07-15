@@ -1,0 +1,35 @@
+name: DAST Pipeline
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  dynamic-analysis:
+    name: Dynamic Application Security Testing (DAST)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Install Trivy
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b . v0.50.0
+
+      - name: Run Trivy Filesystem Scan and Generate Report
+        run: |
+          mkdir -p scan-output
+          echo "### 🔍 Trivy Filesystem Scan Results (HIGH, CRITICAL)" > scan-output/trivy-report.md
+          echo '```' >> scan-output/trivy-report.md
+          ./trivy fs . --severity HIGH,CRITICAL --format table >> scan-output/trivy-report.md || true
+          echo '```' >> scan-output/trivy-report.md
+
+      - name: Post Trivy Report to PR
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          path: scan-output/trivy-report.md
+          header: ":warning: Trivy Filesystem Scan Report"

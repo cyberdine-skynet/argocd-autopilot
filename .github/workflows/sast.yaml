@@ -1,0 +1,38 @@
+name: SAST Pipeline
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+jobs:
+  static-analysis:
+    name: Static Code Quality Checks (SAST)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Install Trunk CLI
+        run: |
+          curl -fsSL https://get.trunk.io -o trunk
+          chmod +x trunk
+          sudo mv trunk /usr/local/bin/
+
+      - name: Run Trunk Code Quality and Generate Report
+        run: |
+          mkdir -p scan-output
+          echo "### 🔍 Trunk Code Quality Findings" > scan-output/trunk-report.md
+          echo '```' >> scan-output/trunk-report.md
+          trunk check --ci --output=text >> scan-output/trunk-report.md || true
+          echo '```' >> scan-output/trunk-report.md
+
+      - name: Post Trunk Report to PR
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          path: scan-output/trunk-report.md
+          header: ":mag: Trunk Code Quality Report"
