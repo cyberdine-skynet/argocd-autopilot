@@ -15,14 +15,22 @@ spec:
         app: traefik
     spec:
       containers:
-      - name: traefik
-        image: traefik:v2.11
-        args:
-        - --api.insecure=true
-        - --providers.kubernetescrd
-        - --entrypoints.web.address=:80
-        ports:
-        - name: web
-          containerPort: 80
-        - name: admin
-          containerPort: 8080
+        - name: traefik
+          image: traefik:v2.11
+          args:
+            - --api.insecure=true
+            - --providers.kubernetescrd
+            - --entrypoints.web.address=:80
+          ports:
+            - name: web
+              containerPort: 80
+            - name: admin
+              containerPort: 8080
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+      securityContext:
+        runAsUser: 1000
+        runAsNonRoot: true

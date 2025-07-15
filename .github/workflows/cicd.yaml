@@ -1,0 +1,156 @@
+name: DevSecOps Ordered CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+env:
+  SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+jobs:
+  source-trigger:
+    name: Source and Trigger
+    runs-on: ubuntu-latest
+    outputs:
+      branch: ${{ steps.branch-info.outputs.branch }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Output Trigger Info
+        id: branch-info
+        run: |
+          echo "### 🔄 Trigger Info" > trigger.md
+          echo '```' >> trigger.md
+          echo "Triggered by: ${{ github.event_name }}" >> trigger.md
+          echo "Branch: ${{ github.ref }}" >> trigger.md
+          echo '```' >> trigger.md
+
+  build-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    needs: source-trigger
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Simulate Build and Test
+        run: |
+          echo "### ⚙️ Build & Test" > build.md
+          echo '```' >> build.md
+          echo "Installing dependencies..." >> build.md
+          echo "Running unit tests..." >> build.md
+          echo "✅ Build successful." >> build.md
+          echo '```' >> build.md
+
+  security-analysis:
+    name: Security Analysis (SAST + IaC + DAST)
+    runs-on: ubuntu-latest
+    needs: build-test
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Tools
+        run: |
+          curl -fsSL https://get.trunk.io -o trunk && chmod +x trunk && sudo mv trunk /usr/local/bin/
+          npm install -g snyk
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b . v0.50.0
+
+      - name: Run Security Tools
+        run: |
+          mkdir -p scan-output
+          echo "### 🔒 Security Analysis" > scan-output/security.md
+          echo '```' >> scan-output/security.md
+
+          echo "🔹 Trunk SAST..." >> scan-output/security.md
+          trunk check --ci --output=text >> scan-output/security.md || echo "Trunk issues"
+
+          echo "🔹 Snyk IaC..." >> scan-output/security.md
+          snyk iac test >> scan-output/security.md || echo "Snyk IaC issues"
+
+          echo "🔹 Trivy FS..." >> scan-output/security.md
+          ./trivy fs . --severity HIGH,CRITICAL --format table >> scan-output/security.md || echo "Trivy FS issues"
+
+          echo '```' >> scan-output/security.md
+
+  image-build-scan:
+    name: Image Build and Scan
+    runs-on: ubuntu-latest
+    needs: security-analysis
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build and Scan Image
+        run: |
+          mkdir -p scan-output
+          echo "### 🐳 Image Build & Scan" > scan-output/image.md
+          echo '```' >> scan-output/image.md
+
+          echo "🔹 Building Docker image..." >> scan-output/image.md
+          docker build -t test-image:latest . || echo "Docker build failed"
+
+          echo "🔹 Scanning with Trivy..." >> scan-output/image.md
+          ./trivy image test-image:latest --severity HIGH,CRITICAL --format table >> scan-output/image.md || echo "Trivy image issues"
+
+          echo '```' >> scan-output/image.md
+
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs: image-build-scan
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Simulate Deployment
+        run: |
+          echo "### 🚀 Deployment" > deploy.md
+          echo '```' >> deploy.md
+          echo "Staging and Production deployment placeholder" >> deploy.md
+          echo '```' >> deploy.md
+
+  post-pr-comments:
+    name: Post PR Comments
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    needs: [source-trigger, build-test, security-analysis, image-build-scan, deploy]
+    strategy:
+      matrix:
+        include:
+          - path: trigger.md
+            header: "🔄 Source and Trigger"
+          - path: build.md
+            header: "⚙️ Build and Test Stage"
+          - path: scan-output/security.md
+            header: "🔒 Security Analysis (SAST + IaC + DAST)"
+          - path: scan-output/image.md
+            header: "🐳 Image Build & Trivy Scan"
+          - path: deploy.md
+            header: "🚀 Deployment Stage"
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Download workflow artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: .
+
+      - name: Check if report exists
+        id: check_report
+        run: |
+          if [ -f "${{ matrix.path }}" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Post PR Comment
+        if: steps.check_report.outputs.exists == 'true'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          path: ${{ matrix.path }}
+          header: ${{ matrix.header }}

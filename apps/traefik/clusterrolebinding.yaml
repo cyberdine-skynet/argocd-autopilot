@@ -7,6 +7,6 @@ roleRef:
   kind: ClusterRole
   name: traefik-ingress-controller
 subjects:
-- kind: ServiceAccount
-  name: default
-  namespace: traefik
+  - kind: ServiceAccount
+    name: default
+    namespace: traefik

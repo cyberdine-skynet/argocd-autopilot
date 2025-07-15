@@ -7,13 +7,13 @@ metadata:
     traefik.ingress.kubernetes.io/router.middlewares: default-headers@kubernetescrd
 spec:
   rules:
-  - host: heimdall.fle.api64.de
-    http:
-      paths:
-      - path: /dashboard
-        pathType: Prefix
-        backend:
-          service:
-            name: heimdall
-            port:
-              number: 80
+    - host: heimdall.fle.api64.de
+      http:
+        paths:
+          - path: /dashboard
+            pathType: Prefix
+            backend:
+              service:
+                name: heimdall
+                port:
+                  number: 80
