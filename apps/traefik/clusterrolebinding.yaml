@@ -8,5 +8,5 @@ roleRef:
   name: traefik-ingress-controller
 subjects:
   - kind: ServiceAccount
-    name: default
+    name: traefik-ingress-controller
     namespace: traefik
