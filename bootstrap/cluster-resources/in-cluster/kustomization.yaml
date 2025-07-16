@@ -1,6 +1,7 @@
 resources:
-- pihole/
-- traefik/
-- argocd-ns.yaml
-- cert-manager/
-- heimdall/
+  - pihole/
+  - traefik/
+  - argocd-ns.yaml
+  - cert-manager/
+  - heimdall/
+  - argocd-nodeport/
