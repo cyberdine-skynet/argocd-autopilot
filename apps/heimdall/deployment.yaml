@@ -12,11 +12,18 @@ spec:
       labels:
         app: heimdall
     spec:
+      serviceAccountName: heimdall
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        fsGroup: 1000
       containers:
         - name: heimdall
-          image: linuxserver/heimdall:latest
+          image: linuxserver/heimdall:2.6.1
           ports:
-            - containerPort: 80
+            - name: http
+              containerPort: 80
           env:
             - name: PUID
               value: "1000"
@@ -24,6 +31,38 @@ spec:
               value: "1000"
             - name: TZ
               value: "Europe/Berlin"
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            capabilities:
+              drop:
+                - ALL
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
           volumeMounts:
             - name: config
               mountPath: /config

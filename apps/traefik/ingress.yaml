@@ -12,13 +12,12 @@ metadata:
     # nginx.ingress.kubernetes.io/auth-realm: "Authentication Required"
 spec:
   rules:
-  - host: traefik.fle.api64.de
-    http:
-      paths:
-      - path: /dashboard(/|$)(.*)
-        pathType: Prefix
-        backend:
-          service:
-            name: traefik
-            port:
-              number: 8080
+    - host: traefik.fle.api64.de
+      http:
+        paths:
+          - path: /dashboard(/|$)(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: traefik
+                port: 8808

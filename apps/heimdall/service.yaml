@@ -6,8 +6,9 @@ spec:
   selector:
     app: heimdall
   ports:
-    - protocol: TCP
+    - name: http
+      protocol: TCP
       port: 80
-      targetPort: 80
+      targetPort: http
       nodePort: 32680
   type: NodePort
