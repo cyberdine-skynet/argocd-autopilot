@@ -7,13 +7,17 @@ metadata:
 spec:
   type: NodePort
   ports:
-  - port: 80
-    name: web
-    targetPort: 80
-    nodePort: 31080
-  - port: 8080
-    name: admin
-    targetPort: 8080
-    nodePort: 31081
+    - port: 80
+      name: web
+      targetPort: 80
+      nodePort: 31080
+    - port: 443
+      name: websecure
+      targetPort: 443
+      nodePort: 31443
+    - port: 8080
+      name: admin
+      targetPort: 8080
+      nodePort: 31081
   selector:
     app: traefik
